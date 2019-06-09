@@ -78,9 +78,10 @@ object Main extends App {
     val realTime = toggle("continuous", default = Some(false),
       descrYes = "continuous output", descrNo = "run all at once")
 
+    verify()
   }
 
-  val startTime = if (ConfFromOptions.startTimeArg.isSupplied) {
+  lazy val startTime = if (ConfFromOptions.startTimeArg.isSupplied) {
     LocalDateTime.parse(ConfFromOptions.startTimeArg())
   } else if (ConfigFromFile.startDate.nonEmpty) {
     LocalDateTime.parse(ConfigFromFile.startDate.get)
@@ -88,7 +89,7 @@ object Main extends App {
     LocalDateTime.now().minus(ConfFromOptions.from(), ChronoUnit.DAYS)
   }
 
-  val endTime = if (ConfFromOptions.endTimeArg.isSupplied) {
+  lazy val endTime = if (ConfFromOptions.endTimeArg.isSupplied) {
     LocalDateTime.parse(ConfFromOptions.endTimeArg())
   } else if (ConfigFromFile.endDate.nonEmpty) {
     LocalDateTime.parse(ConfigFromFile.endDate.get)
@@ -100,30 +101,30 @@ object Main extends App {
 
   var nUsers = ConfigFromFile.nUsers.getOrElse(ConfFromOptions.nUsers())
 
-  val seed = if (ConfFromOptions.randomSeed.isSupplied)
+  lazy val seed = if (ConfFromOptions.randomSeed.isSupplied)
     ConfFromOptions.randomSeed.get.get.toLong
    else
     ConfigFromFile.seed
 
 
-  val tag = if (ConfFromOptions.tag.isSupplied)
+  lazy val tag = if (ConfFromOptions.tag.isSupplied)
     ConfFromOptions.tag.get
   else
     ConfigFromFile.tag
 
-  val growthRate = if (ConfFromOptions.growthRate.isSupplied)
+  lazy val growthRate = if (ConfFromOptions.growthRate.isSupplied)
     ConfFromOptions.growthRate.get
   else
     ConfigFromFile.growthRate
 
-  val kafkaProducer = if (ConfFromOptions.kafkaBrokerList.isDefined) {
+  lazy val kafkaProducer = if (ConfFromOptions.kafkaBrokerList.isDefined) {
     val kafkaProperties = new Properties()
     kafkaProperties.setProperty("metadata.broker.list", ConfFromOptions.kafkaBrokerList.get.get)
     val producerConfig = new ProducerConfig(kafkaProperties)
     new Some(new Producer[Array[Byte],Array[Byte]](producerConfig))
   } else None
 
-  val realTime = ConfFromOptions.realTime.get.get
+  lazy val realTime = ConfFromOptions.realTime.get.get
 
   def generateEvents() = {
 
@@ -211,12 +212,12 @@ object Main extends App {
       u.nextEvent(prAttrition)
       users += u
       events += 1
+      out.flush()
     }
 
     System.err.println("")
     System.err.println()
 
-    out.flush()
     out.close()
 
   }

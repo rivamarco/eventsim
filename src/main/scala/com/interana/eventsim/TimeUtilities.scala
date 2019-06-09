@@ -13,8 +13,8 @@ object TimeUtilities {
   // def dateTimeToLocalDate(dt: Instant): LocalDate = LocalDate.from(Instant.ofEpochMilli(dt.getMillis()))
 
   // first implementation: US only
-  val holidays = HolidayManager.getInstance()
-  def isHoliday(ld: LocalDate): Boolean = holidays.isHoliday(ld)
+//  val holidays = HolidayManager.getInstance()
+  def isHoliday(ld: LocalDate): Boolean = false//holidays.isHoliday(ld)
 
   def isWeekend(ld: LocalDate): Boolean = {
     val dow = ld.getDayOfWeek
