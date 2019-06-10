@@ -9,7 +9,7 @@ import com.interana.eventsim.Utilities.{SimilarSongParser, TrackListenCount}
 import com.interana.eventsim.buildin.{DeviceProperties, UserProperties}
 import com.interana.eventsim.config.ConfigFromFile
 import kafka.producer.{Producer, ProducerConfig}
-import org.rogach.scallop.{ScallopOption, ScallopConf}
+import org.rogach.scallop.{ScallopConf, ScallopOption}
 
 import scala.collection.mutable
 
@@ -69,6 +69,21 @@ object Main extends App {
     val kafkaBrokerList: ScallopOption[String] =
       opt[String]("kafkaBrokerList", descr = "kafka broker list", required = false)
 
+    val nsdbHost: ScallopOption[String] =
+      opt[String]("nsdb-host", descr = "Nsdb Host", required = false)
+
+    val nsdbPort: ScallopOption[Int] =
+      opt[Int]("nsdb-port", descr = "Nsdb Port", required = false, default = Option(7817))
+
+    val nsdbDb: ScallopOption[String] =
+      opt[String]("nsdb-db", descr = "Nsdb Db", required = false, default = Option("eventsim"))
+
+    val nsdbNamespace: ScallopOption[String] =
+      opt[String]("nsdb-namespace", descr = "Nsdb Host", required = false, default = Option("eventsim"))
+
+    val nsdbMetric: ScallopOption[String] =
+      opt[String]("nsdb-metric", descr = "Nsdb Host", required = false, default = Option("users"))
+
     val generateCounts = toggle("generate-counts", default = Some(false),
       descrYes = "generate listen counts file then stop", descrNo = "run normally")
 
@@ -111,7 +126,6 @@ object Main extends App {
   else
     ConfigFromFile.seed
 
-
   lazy val tag = if (ConfFromOptions.tag.isSupplied)
     ConfFromOptions.tag.get
   else
@@ -126,10 +140,15 @@ object Main extends App {
     val kafkaProperties = new Properties()
     kafkaProperties.setProperty("metadata.broker.list", ConfFromOptions.kafkaBrokerList.get.get)
     val producerConfig = new ProducerConfig(kafkaProperties)
-    new Some(new Producer[Array[Byte], Array[Byte]](producerConfig))
+    Some(new Producer[Array[Byte], Array[Byte]](producerConfig))
   } else None
 
+  lazy val nSDbWriter = new NSDbWriter[User](ConfFromOptions.nsdbHost.getOrElse("notReacheableHost"),
+    ConfFromOptions.nsdbPort.toOption.get,ConfFromOptions.nsdbDb.toOption.get,ConfFromOptions.nsdbNamespace.toOption.get, ConfFromOptions.nsdbMetric.toOption.get)(User.nsdbConverter)
+
   lazy val realTime = ConfFromOptions.realTime.toOption.get || endTime == LocalDateTime.MAX
+
+  lazy val sinkToNsdb = ConfFromOptions.nsdbHost.isDefined
 
   def generateEvents(): Unit = {
 
@@ -219,6 +238,8 @@ object Main extends App {
       else u.session.nextEventTimeStamp.get
 
       if (clock.isAfter(startTime))
+        if (sinkToNsdb) nSDbWriter.write(u)
+        else
         u.writeEvent()
       u.nextEvent(prAttrition)
       users += u
