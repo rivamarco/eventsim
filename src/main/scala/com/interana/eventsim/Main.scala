@@ -85,16 +85,21 @@ object Main extends App {
     LocalDateTime.parse(ConfFromOptions.startTimeArg())
   } else if (ConfigFromFile.startDate.nonEmpty) {
     LocalDateTime.parse(ConfigFromFile.startDate.get)
-  } else {
+  } else if (ConfFromOptions.from.isSupplied) {
     LocalDateTime.now().minus(ConfFromOptions.from(), ChronoUnit.DAYS)
+  } else {
+    LocalDateTime.now()
   }
 
   lazy val endTime = if (ConfFromOptions.endTimeArg.isSupplied) {
     LocalDateTime.parse(ConfFromOptions.endTimeArg())
   } else if (ConfigFromFile.endDate.nonEmpty) {
     LocalDateTime.parse(ConfigFromFile.endDate.get)
-  } else {
+  } else if (ConfFromOptions.to.isSupplied) {
     LocalDateTime.now().minus(ConfFromOptions.to(), ChronoUnit.DAYS)
+  } else {
+    //a pragmatic definition of infinite
+    LocalDateTime.MAX
   }
 
   ConfigFromFile.configFileLoader(ConfFromOptions.configFile())
@@ -103,7 +108,7 @@ object Main extends App {
 
   lazy val seed = if (ConfFromOptions.randomSeed.isSupplied)
     ConfFromOptions.randomSeed.get.get.toLong
-   else
+  else
     ConfigFromFile.seed
 
 
@@ -121,12 +126,12 @@ object Main extends App {
     val kafkaProperties = new Properties()
     kafkaProperties.setProperty("metadata.broker.list", ConfFromOptions.kafkaBrokerList.get.get)
     val producerConfig = new ProducerConfig(kafkaProperties)
-    new Some(new Producer[Array[Byte],Array[Byte]](producerConfig))
+    new Some(new Producer[Array[Byte], Array[Byte]](producerConfig))
   } else None
 
-  lazy val realTime = ConfFromOptions.realTime.get.get
+  lazy val realTime = ConfFromOptions.realTime.toOption.get || endTime == LocalDateTime.MAX
 
-  def generateEvents() = {
+  def generateEvents(): Unit = {
 
     val out = if (kafkaProducer.nonEmpty) {
       new KafkaOutputStream(kafkaProducer.get, ConfFromOptions.kafkaTopic.get.get)
@@ -136,7 +141,7 @@ object Main extends App {
       System.out
     }
 
-    (0 until nUsers).foreach((_) =>
+    (0 until nUsers).foreach(_ =>
       users += new User(
         ConfigFromFile.alpha * logNormalRandomValue,
         ConfigFromFile.beta * logNormalRandomValue,
@@ -150,7 +155,8 @@ object Main extends App {
       ))
 
     val growthRate = ConfigFromFile.growthRate.getOrElse(ConfFromOptions.growthRate.get.get)
-    if (growthRate > 0) {
+    //fixme think about a way to handle a dynamic growth in case of realtime
+    if (growthRate > 0 && !realTime) {
       var current = startTime
       while (current.isBefore(endTime)) {
         val mu = Constants.SECONDS_PER_YEAR / (nUsers * growthRate)
@@ -171,11 +177,12 @@ object Main extends App {
     }
     System.err.println("Initial number of users: " + ConfFromOptions.nUsers() + ", Final number of users: " + nUsers)
 
-    val startTimeString =  startTime.toString
+    val startTimeString = startTime.toString
     val endTimeString = endTime.toString
     System.err.println("Start: " + startTimeString + ", End: " + endTimeString)
 
     var lastTimeStamp = System.currentTimeMillis()
+
     def showProgress(n: LocalDateTime, users: Int, e: Int): Unit = {
       if ((e % 10000) == 0) {
         val now = System.currentTimeMillis()
@@ -187,6 +194,7 @@ object Main extends App {
         System.err.write(message.getBytes)
       }
     }
+
     System.err.println("Starting to generate events.")
     System.err.println("Damping=" + ConfigFromFile.damping + ", Weekend-Damping=" + ConfigFromFile.weekendDamping)
 
@@ -206,9 +214,12 @@ object Main extends App {
       val u = users.dequeue()
       val prAttrition = nUsers * ConfFromOptions.attritionRate() *
         (endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC) / Constants.SECONDS_PER_YEAR)
-      clock = u.session.nextEventTimeStamp.get
 
-      if (clock.isAfter(startTime)) u.writeEvent()
+      clock = if (realTime) LocalDateTime.now()
+      else u.session.nextEventTimeStamp.get
+
+      if (clock.isAfter(startTime))
+        u.writeEvent()
       u.nextEvent(prAttrition)
       users += u
       events += 1
@@ -219,7 +230,6 @@ object Main extends App {
     System.err.println()
 
     out.close()
-
   }
 
   if (ConfFromOptions.generateCounts())
