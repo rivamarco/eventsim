@@ -4,7 +4,8 @@ version := "1.0"
 
 resolvers ++= Seq(
   Opts.resolver.mavenLocalFile,
-  "Radicalbit Public Releases" at "https://tools.radicalbit.io/artifactory/public-release/"
+  "Radicalbit Public Releases" at "https://tools.radicalbit.io/artifactory/public-release/",
+  "Radicalbit Public Releases" at "https://tools.radicalbit.io/artifactory/public-snapshot/"
 )
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "3.5"
