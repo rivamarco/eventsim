@@ -9,7 +9,8 @@ import io.radicalbit.nsdb.api.scala.Bit
 
 import scala.util.parsing.json.JSONObject
 
-class User(val alpha: Double,
+class User(val tag: String,
+            val alpha: Double,
            val beta: Double,
            val startTime: LocalDateTime,
            val initialSessionStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
@@ -114,9 +115,7 @@ class User(val alpha: Double,
           case _: String => writer.writeStringField(p._1, p._2.asInstanceOf[String])
         }})
     }
-    if (Main.tag.isDefined) {
-        writer.writeStringField("tag", Main.tag.get)
-    }
+        writer.writeStringField("tag", tag)
     if (session.currentState.page=="NextSong") {
       writer.writeStringField("artist", session.currentSong.get._2)
       writer.writeStringField("song",  session.currentSong.get._3)
@@ -172,9 +171,7 @@ object User {
         }})
     }
 
-    if (Main.tag.isDefined) {
-      result = result.tag("tag", Main.tag.get)
-    }
+      result = result.tag("tag", tag)
     if (u.session.currentState.page=="NextSong") {
       result = result
         .tag("artist", u.session.currentSong.get._2)
