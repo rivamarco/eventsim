@@ -5,9 +5,9 @@ import com.interana.eventsim.WeightedRandomThingGenerator
 import scala.io.Source
 
 class GenericGenerator(fn: String, sep: String, thingColumn: Int, weightColumn: Int, header: Boolean)
-  extends WeightedRandomThingGenerator[String] {
+    extends WeightedRandomThingGenerator[String] {
 
-  val s = Source.fromFile(fn)
+  val s     = Source.fromFile(fn)
   val lines = s.getLines()
   if (header) lines.drop(1)
   for (l <- lines) {

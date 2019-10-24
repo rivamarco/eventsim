@@ -4,7 +4,7 @@ import java.io.PrintWriter
 
 import scala.io.Source
 
-object TrackListenCount  {
+object TrackListenCount {
 
   def compute() = {
 
@@ -23,28 +23,28 @@ object TrackListenCount  {
     // 27 28 29 30
     // tempo,timeSignature,timeSignatureConfidence,TrackId
 
-    var counter = 0
-    val mdfile = Source.fromFile("data/songs_analysis.txt","ISO-8859-1")
+    var counter     = 0
+    val mdfile      = Source.fromFile("data/songs_analysis.txt", "ISO-8859-1")
     val mdfileLines = mdfile.getLines()
-    val metadata = new scala.collection.mutable.HashMap[String,Double]()
+    val metadata    = new scala.collection.mutable.HashMap[String, Double]()
     for (md <- mdfileLines) {
       System.err.print("\r" + counter.toString)
       counter += 1
       val mdFields = md.split("\\s+")
-      val trackId = mdFields(30)
+      val trackId  = mdFields(30)
       val duration = mdFields(3)
       metadata.put(trackId, duration.toDouble)
     }
 
-    val s = Source.fromFile("data/train_triplets.txt", "ISO-8859-1")
-    val lines = s.getLines()
+    val s      = Source.fromFile("data/train_triplets.txt", "ISO-8859-1")
+    val lines  = s.getLines()
     val counts = new scala.collection.mutable.HashMap[String, Int]()
     for (l <- lines) {
       System.err.print("\r" + counter.toString)
       counter += 1
       val fields = l.split("\t")
       // val userId = fields(0) // not needed
-      val song = fields(1)
+      val song  = fields(1)
       val count = fields(2).toInt
       counts.put(song, counts.getOrElse(song, 0) + count)
     }
@@ -52,18 +52,18 @@ object TrackListenCount  {
 
     // unique tracks format:
     // trackId<SEP>songId<SEP>artistName<SEP>songTitle
-    val trackFile = Source.fromFile("data/unique_tracks.txt","ISO-8859-1")
+    val trackFile      = Source.fromFile("data/unique_tracks.txt", "ISO-8859-1")
     val trackFileLines = trackFile.getLines()
-    val tracks = new scala.collection.mutable.HashMap[String,(String,String,String)]()
+    val tracks         = new scala.collection.mutable.HashMap[String, (String, String, String)]()
     for (t <- trackFileLines) {
       System.err.print("\r" + counter.toString)
       counter += 1
       try {
-        val fields = t.split("<SEP>")
-        val trackId = fields(0)
-        val songId = fields(1)
+        val fields     = t.split("<SEP>")
+        val trackId    = fields(0)
+        val songId     = fields(1)
         val artistName = fields(2)
-        val songTitle = fields(3)
+        val songTitle  = fields(3)
         tracks.put(trackId, (songId, artistName, songTitle))
       } catch {
         case e: IndexOutOfBoundsException => {
@@ -77,19 +77,19 @@ object TrackListenCount  {
 
     val out = new PrintWriter("data/listen_counts.txt")
 
-    tracks.foreach((r:(String,(String,String,String))) => {
-      val (trackId,(songId,artist,songName)) = r
-      val count = counts.getOrElse(songId,0)
-      val duration = metadata(trackId)
+    tracks.foreach((r: (String, (String, String, String))) => {
+      val (trackId, (songId, artist, songName)) = r
+      val count                                 = counts.getOrElse(songId, 0)
+      val duration                              = metadata(trackId)
       if (count > 0)
-        out.println(trackId + "\t" + removeTabs(artist)  + "\t" + removeTabs(songName)  + "\t" + duration  + "\t" + count )
+        out.println(trackId + "\t" + removeTabs(artist) + "\t" + removeTabs(songName) + "\t" + duration + "\t" + count)
     })
 
     out.close()
   }
 
   def removeTabs(s: String): String = {
-    s.replaceAll("\t","     ")
+    s.replaceAll("\t", "     ")
   }
 
 }

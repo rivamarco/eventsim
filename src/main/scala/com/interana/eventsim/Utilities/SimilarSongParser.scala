@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.{TreeNode, JsonParser, JsonFactory}
 
 object SimilarSongParser {
 
-
   def compute() = {
 
     /* files from
@@ -45,7 +44,7 @@ object SimilarSongParser {
     }
     val fileOutputStream = new FileOutputStream("data/similar_songs.csv.gz")
     val gzipOutputStream = new GZIPOutputStream(fileOutputStream)
-    val out = new PrintWriter(gzipOutputStream)
+    val out              = new PrintWriter(gzipOutputStream)
 
     val jsonFactory = new JsonFactory(new com.fasterxml.jackson.databind.ObjectMapper())
 
@@ -53,14 +52,14 @@ object SimilarSongParser {
 
     def processFile(file: java.io.File) = {
       val parser: JsonParser = jsonFactory.createParser(file)
-      val tree: TreeNode = parser.readValueAsTree()
-      val trackId = tree.get("track_id").toString
+      val tree: TreeNode     = parser.readValueAsTree()
+      val trackId            = tree.get("track_id").toString
       //println("trackId: " + trackId)
-      val similars = tree.get("similars")
+      val similars   = tree.get("similars")
       val similarSet = new ArrayList[String]()
       for (i <- 0 until similars.size()) {
         val item = similars.get(i)
-        val tid = item.get(0)
+        val tid  = item.get(0)
         out.println(unquote(trackId) + "," + unquote(tid.toString))
       }
     }

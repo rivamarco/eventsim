@@ -23,6 +23,8 @@ libraryDependencies ++= Seq(
 
 enablePlugins(JavaServerAppPackaging, SbtNativePackager)
 
+scalafmtOnCompile in ThisBuild := true
+
 lazy val packageDist   = taskKey[File]("create universal package and move it to package folder")
 addCommandAlias("dist", "packageDist")
 

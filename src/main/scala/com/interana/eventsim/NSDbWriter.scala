@@ -6,7 +6,8 @@ import io.radicalbit.nsdb.rpc.response.RPCInsertResult
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext}
 
-class NSDbWriter[T](val host: String, val port: Int, db: String, namespace: String, metric: String)(implicit converter: (T, Bit) => Bit) {
+class NSDbWriter[T](val host: String, val port: Int, db: String, namespace: String, metric: String)(
+    implicit converter: (T, Bit) => Bit) {
 
   implicit val ec = ExecutionContext.global
 

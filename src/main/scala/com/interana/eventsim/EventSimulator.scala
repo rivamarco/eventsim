@@ -65,23 +65,28 @@ object EventSimulator {
 //      }
 
     lazy val nSDbWriter = new NSDbWriter[User](param.nsdbHost.getOrElse("notReacheableHost"),
-      param.nsdbPort.get,param.nsdbDb.get,param.nsdbNamespace.get, ConfFromOptions.nsdbMetric.toOption.get)(User.nsdbConverter)
+                                               param.nsdbPort.get,
+                                               param.nsdbDb.get,
+                                               param.nsdbNamespace.get,
+                                               ConfFromOptions.nsdbMetric.toOption.get)(User.nsdbConverter)
 
     lazy val realTime = ConfFromOptions.realTime.toOption.get || param.endTime == LocalDateTime.MAX
 
     lazy val sinkToNsdb = ConfFromOptions.nsdbHost.isDefined
 
-    (0 until nUsers).foreach(_ =>
-      users += new User(
-        ConfigFromFile.alpha * logNormalRandomValue,
-        ConfigFromFile.beta * logNormalRandomValue,
-        param.startTime,
-        ConfigFromFile.initialStates,
-        ConfigFromFile.authGenerator.randomThing,
-        UserProperties.randomProps,
-        DeviceProperties.randomProps,
-        ConfigFromFile.levelGenerator.randomThing,
-        out
+    (0 until nUsers).foreach(
+      _ =>
+        users += new User(
+          param.tag,
+          ConfigFromFile.alpha * logNormalRandomValue,
+          ConfigFromFile.beta * logNormalRandomValue,
+          param.startTime,
+          ConfigFromFile.initialStates,
+          ConfigFromFile.authGenerator.randomThing,
+          UserProperties.randomProps,
+          DeviceProperties.randomProps,
+          ConfigFromFile.levelGenerator.randomThing,
+          out
       ))
 
     val growthRate = ConfigFromFile.growthRate.getOrElse(ConfFromOptions.growthRate.get.get)
@@ -92,6 +97,7 @@ object EventSimulator {
         val mu = Constants.SECONDS_PER_YEAR / (nUsers * growthRate)
         current = current.plusSeconds(TimeUtilities.exponentialRandomValue(mu).toInt)
         users += new User(
+          param.tag,
           ConfigFromFile.alpha * logNormalRandomValue,
           ConfigFromFile.beta * logNormalRandomValue,
           current,
@@ -108,14 +114,14 @@ object EventSimulator {
     System.err.println("Initial number of users: " + ConfFromOptions.nUsers() + ", Final number of users: " + nUsers)
 
     val startTimeString = param.startTime.toString
-    val endTimeString = param.endTime.toString
+    val endTimeString   = param.endTime.toString
     System.err.println("Start: " + startTimeString + ", End: " + endTimeString)
 
     var lastTimeStamp = System.currentTimeMillis()
 
     def showProgress(n: LocalDateTime, users: Int, e: Int): Unit = {
       if ((e % 10000) == 0) {
-        val now = System.currentTimeMillis()
+        val now  = System.currentTimeMillis()
         val rate = 10000000 / (now - lastTimeStamp)
         lastTimeStamp = now
         val message = // "Start: " + startTimeString + ", End: " + endTimeString + ", " +
@@ -128,7 +134,7 @@ object EventSimulator {
     System.err.println("Starting to generate events.")
     System.err.println("Damping=" + ConfigFromFile.damping + ", Weekend-Damping=" + ConfigFromFile.weekendDamping)
 
-    var clock = param.startTime
+    var clock  = param.startTime
     var events = 1
 
     while (clock.isBefore(param.endTime)) {
@@ -145,8 +151,9 @@ object EventSimulator {
       val prAttrition = nUsers * ConfFromOptions.attritionRate() *
         (param.endTime.toEpochSecond(ZoneOffset.UTC) - param.startTime.toEpochSecond(ZoneOffset.UTC) / Constants.SECONDS_PER_YEAR)
 
-      clock = if (realTime) LocalDateTime.now()
-      else u.session.nextEventTimeStamp.get
+      clock =
+        if (realTime) LocalDateTime.now()
+        else u.session.nextEventTimeStamp.get
 
       if (clock.isAfter(param.startTime))
         if (sinkToNsdb) nSDbWriter.write(u)

@@ -1,2 +1,3 @@
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.22")
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.2.0")
+//addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.2.0")
+addSbtPlugin("com.geirsson"                      % "sbt-scalafmt"        % "1.5.1")
