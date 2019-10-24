@@ -24,12 +24,12 @@ class WeightedRandomThingGenerator[T] {
     override def compare(x: (T, Integer), y: (T, Integer)): Int = x._2.compareTo(y._2)
   }
 
-  def randomThing = {
+  def randomThing(seed: Long) = {
     if (!ready) {
       a = ab.toArray
       ready = true
     }
-    val key: (T, Integer) = (null, TimeUtilities.rng.nextInt(totalWeight)).asInstanceOf[(T, Integer)]
+    val key: (T, Integer) = (null, new TimeUtilities(seed).rng.nextInt(totalWeight)).asInstanceOf[(T, Integer)]
     val idx               = java.util.Arrays.binarySearch(a, key, tupleSecondValueOrdering)
     if (idx >= 0) a(idx)._1 else a(-idx - 2)._1
   }

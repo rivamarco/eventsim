@@ -2,11 +2,11 @@ package com.interana.eventsim.buildin
 
 import com.interana.eventsim.WeightedRandomThingGenerator
 
-import scala.io.Source
+import scala.io.{Codec, Source}
 
 object RandomFirstNameGenerator extends WeightedRandomThingGenerator[(String, String)] {
 
-  val s     = Source.fromFile("data/yob1990.txt", "ISO-8859-1")
+  val s     = Source.fromResource("data/yob1990.txt")(Codec("ISO-8859-1"))
   val lines = s.getLines()
   for (l <- lines) {
     val fields = l.split(",")

@@ -2,14 +2,14 @@ package com.interana.eventsim.buildin
 
 import com.interana.eventsim.WeightedRandomThingGenerator
 
-import scala.io.Source
+import scala.io.{Codec, Source}
 
 /**
   * Data from http://techblog.willshouse.com/2012/01/03/most-common-user-agents/
   */
 object RandomUserAgentGenerator extends WeightedRandomThingGenerator[(String, String, String)] {
 
-  val s     = Source.fromFile("data/user agents.txt", "UTF-16" /*, "ISO-8859-1" */ )
+  val s     = Source.fromResource("data/user agents.txt")(Codec("UTF-16" /*, "ISO-8859-1" */ ))
   val lines = s.getLines().drop(1)
   for (l <- lines) {
     val fields = l.split("\t")

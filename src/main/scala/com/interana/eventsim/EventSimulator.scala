@@ -1,27 +1,26 @@
 package com.interana.eventsim
 
-import java.io.FileOutputStream
 import java.time.{Duration, LocalDateTime, ZoneOffset}
 import java.util.Properties
-
-import com.interana.eventsim.Main.ConfFromOptions
-import kafka.producer.{Producer, ProducerConfig}
-
-import scala.collection.mutable
 
 import com.interana.eventsim.Utilities.{SimilarSongParser, TrackListenCount}
 import com.interana.eventsim.buildin.{DeviceProperties, UserProperties}
 import com.interana.eventsim.config.ConfigFromFile
+import kafka.producer.{Producer, ProducerConfig}
+
+import scala.collection.mutable
 
 object EventSimulator {
 
   private val sqrtE = Math.exp(0.5)
 
-  private def logNormalRandomValue = Math.exp(TimeUtilities.rng.nextGaussian()) / sqrtE
-
   var users = new mutable.PriorityQueue[User]()
 
   private def generateEvents(param: EventSimulatorParams): Unit = {
+
+    val timeUtilities = new TimeUtilities(param.randomSeed.get)
+
+    def logNormalRandomValue = Math.exp(timeUtilities.rng.nextGaussian()) / sqrtE
 
     ConfigFromFile.configFileLoader(param.configFile)
 
@@ -68,50 +67,54 @@ object EventSimulator {
                                                param.nsdbPort.get,
                                                param.nsdbDb.get,
                                                param.nsdbNamespace.get,
-                                               ConfFromOptions.nsdbMetric.toOption.get)(User.nsdbConverter)
+                                               param.nsdbMetric.get)(User.nsdbConverter)
 
-    lazy val realTime = ConfFromOptions.realTime.toOption.get || param.endTime == LocalDateTime.MAX
+    lazy val realTime = param.realTime || param.endTime == LocalDateTime.MAX
 
-    lazy val sinkToNsdb = ConfFromOptions.nsdbHost.isDefined
+    lazy val sinkToNsdb = param.nsdbHost.isDefined
 
     (0 until nUsers).foreach(
       _ =>
         users += new User(
+          param.randomSeed.get,
+          param.firstUserId,
           param.tag,
           ConfigFromFile.alpha * logNormalRandomValue,
           ConfigFromFile.beta * logNormalRandomValue,
           param.startTime,
           ConfigFromFile.initialStates,
-          ConfigFromFile.authGenerator.randomThing,
-          UserProperties.randomProps,
-          DeviceProperties.randomProps,
-          ConfigFromFile.levelGenerator.randomThing,
+          ConfigFromFile.authGenerator.randomThing(param.randomSeed.get),
+          UserProperties.randomProps(param.randomSeed.get, param.growthRate, param.startTime),
+          DeviceProperties.randomProps(param.randomSeed.get),
+          ConfigFromFile.levelGenerator.randomThing(param.randomSeed.get),
           out
       ))
 
-    val growthRate = ConfigFromFile.growthRate.getOrElse(ConfFromOptions.growthRate.get.get)
+    val growthRate = ConfigFromFile.growthRate.getOrElse(param.growthRate)
     //fixme think about a way to handle a dynamic growth in case of realtime
     if (growthRate > 0 && !realTime) {
       var current = param.startTime
       while (current.isBefore(param.endTime)) {
         val mu = Constants.SECONDS_PER_YEAR / (nUsers * growthRate)
-        current = current.plusSeconds(TimeUtilities.exponentialRandomValue(mu).toInt)
+        current = current.plusSeconds(timeUtilities.exponentialRandomValue(mu).toInt)
         users += new User(
+          param.randomSeed.get,
+          param.firstUserId,
           param.tag,
           ConfigFromFile.alpha * logNormalRandomValue,
           ConfigFromFile.beta * logNormalRandomValue,
           current,
           ConfigFromFile.initialStates,
           ConfigFromFile.newUserAuth,
-          UserProperties.randomNewProps(current),
-          DeviceProperties.randomProps,
+          UserProperties.randomNewProps(param.randomSeed.get, param.growthRate, current, param.startTime),
+          DeviceProperties.randomProps(param.randomSeed.get),
           ConfigFromFile.newUserLevel,
           out
         )
         nUsers += 1
       }
     }
-    System.err.println("Initial number of users: " + ConfFromOptions.nUsers() + ", Final number of users: " + nUsers)
+    System.err.println("Initial number of users: " + param.nUsers + ", Final number of users: " + nUsers)
 
     val startTimeString = param.startTime.toString
     val endTimeString   = param.endTime.toString
@@ -148,7 +151,7 @@ object EventSimulator {
 
       showProgress(clock, users.length, events)
       val u = users.dequeue()
-      val prAttrition = nUsers * ConfFromOptions.attritionRate() *
+      val prAttrition = nUsers * param.attritionRate *
         (param.endTime.toEpochSecond(ZoneOffset.UTC) - param.startTime.toEpochSecond(ZoneOffset.UTC) / Constants.SECONDS_PER_YEAR)
 
       clock =
@@ -159,7 +162,7 @@ object EventSimulator {
         if (sinkToNsdb) nSDbWriter.write(u)
         else
           u.writeEvent()
-      u.nextEvent(prAttrition)
+      u.nextEvent(param.randomSeed.get, prAttrition)
       users += u
       events += 1
       out.flush()

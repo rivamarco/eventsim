@@ -1,14 +1,13 @@
 package com.interana.eventsim
 
 import java.time.temporal.{ChronoField, ChronoUnit}
-import java.time.{DayOfWeek, Duration, LocalDateTime, LocalDate}
+import java.time.{DayOfWeek, Duration, LocalDate, LocalDateTime}
 
 import com.interana.eventsim.Constants._
 import com.interana.eventsim.config.ConfigFromFile
-import de.jollyday.HolidayManager
 import org.apache.commons.math3.random.MersenneTwister
 
-object TimeUtilities {
+class TimeUtilities(seed: Long) {
 
   // def dateTimeToLocalDate(dt: Instant): LocalDate = LocalDate.from(Instant.ofEpochMilli(dt.getMillis()))
 
@@ -24,7 +23,7 @@ object TimeUtilities {
   def isWeekendOrHoliday(i: LocalDateTime): Boolean = isWeekendOrHoliday(LocalDate.from(i))
   def isWeekendOrHoliday(ld: LocalDate): Boolean    = isWeekend(ld) || isHoliday(ld)
 
-  val rng = new MersenneTwister(Main.seed) // Mersenne Twisters are fast and good enough for fake data
+  val rng = new MersenneTwister(seed) // Mersenne Twisters are fast and good enough for fake data
 
   // If X has a standard uniform distribution, then by the inverse transform sampling method,
   // Y = − (1/λ) ln(X) has an exponential distribution with (rate) parameter λ

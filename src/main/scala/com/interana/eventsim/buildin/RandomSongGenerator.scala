@@ -11,7 +11,7 @@ import scala.io.Source
 object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
   System.err.println("Loading song file...")
   // val s = Source.fromFile("data/listen_counts.txt","ISO-8859-1")
-  val fis = new FileInputStream("data/listen_counts.txt.gz")
+  val fis = this.getClass.getClassLoader.getResourceAsStream("data/listen_counts.txt.gz")
   val gis = new GZIPInputStream(fis)
   val s   = Source.fromInputStream(gis, "ISO-8859-1")
 
@@ -83,20 +83,21 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
     similarSongSource.close()
   } catch {
     case e: Exception =>
+//      e.printStackTrace()
       System.err.println("Could not load similar song file (don't worry if it's missing)\n")
   }
 
-  def nextSong(lastTrackId: String): (String, String, String, Double) = {
+  def nextSong(seed: Long, lastTrackId: String): (String, String, String, Double) = {
     val nextTrackId =
-      if (!similarSongs.isEmpty && similarSongs.contains(lastTrackId)) {
-        similarSongs(lastTrackId).randomThing
+      if (similarSongs.nonEmpty && similarSongs.contains(lastTrackId)) {
+        similarSongs(lastTrackId).randomThing(seed)
       } else {
-        this.randomThing
+        this.randomThing(seed)
       }
     val song = trackIdMap(nextTrackId)
     (nextTrackId, song._1, song._2, song._3)
   }
 
-  def nextSong(): (String, String, String, Double) = nextSong("")
+  def nextSong(seed: Long): (String, String, String, Double) = nextSong(seed, "")
 
 }

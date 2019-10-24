@@ -9,7 +9,9 @@ import io.radicalbit.nsdb.api.scala.Bit
 
 import scala.util.parsing.json.JSONObject
 
-class User(val tag: String,
+class User(val seed: Long,
+           val firstUserId: Int,
+           val tag: String,
            val alpha: Double,
            val beta: Double,
            val startTime: LocalDateTime,
@@ -23,8 +25,11 @@ class User(val tag: String,
     extends Serializable
     with Ordered[User] {
 
-  val userId = Counters.nextUserId
-  var session = new Session(Some(Session.pickFirstTimeStamp(startTime, alpha, beta)),
+  val userId = new Counters(firstUserId).nextUserId
+
+  var session = new Session(seed,
+                            firstUserId,
+                            Some(Session.pickFirstTimeStamp(seed, startTime, alpha, beta)),
                             alpha,
                             beta,
                             initialSessionStates,
@@ -40,17 +45,17 @@ class User(val tag: String,
         thatValue.get.compareTo(thisValue.get)
     }
 
-  def nextEvent(): Unit = nextEvent(0.0)
+  def nextEvent(seed: Long): Unit = nextEvent(seed, 0.0)
 
-  def nextEvent(prAttrition: Double) = {
+  def nextEvent(seed: Long, prAttrition: Double) = {
     session.incrementEvent()
     if (session.done) {
-      if (TimeUtilities.rng.nextDouble() < prAttrition ||
+      if (new TimeUtilities(seed).rng.nextDouble() < prAttrition ||
           session.currentState.auth == ConfigFromFile.churnedState.getOrElse("")) {
         session.nextEventTimeStamp = None
         // TODO: mark as churned
       } else {
-        session = session.nextSession
+        session = session.nextSession(seed, firstUserId)
       }
     }
   }

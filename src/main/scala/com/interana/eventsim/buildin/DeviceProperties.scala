@@ -2,10 +2,10 @@ package com.interana.eventsim.buildin
 
 object DeviceProperties {
 
-  def randomProps =
+  def randomProps(seed: Long) =
     Map[String, Any](
-      "location"  -> RandomLocationGenerator.randomThing,
-      "userAgent" -> RandomUserAgentGenerator.randomThing._1
+      "location"  -> RandomLocationGenerator.randomThing(seed),
+      "userAgent" -> RandomUserAgentGenerator.randomThing(seed)._1
     )
 
 }

@@ -8,7 +8,7 @@ import org.rogach.scallop.{ScallopConf, ScallopOption}
 
 object Main extends App {
 
-  private[eventsim] object ConfFromOptions extends ScallopConf(args) {
+  private object ConfFromOptions extends ScallopConf(args) {
     val nUsers: ScallopOption[Int] =
       opt[Int]("nusers", descr = "initial number of users", required = false, default = Option(1))
 
@@ -97,7 +97,7 @@ object Main extends App {
     verify()
   }
 
-  private[eventsim] lazy val startTime = if (ConfFromOptions.startTimeArg.isSupplied) {
+  private lazy val startTime = if (ConfFromOptions.startTimeArg.isSupplied) {
     LocalDateTime.parse(ConfFromOptions.startTimeArg())
   } else if (ConfigFromFile.startDate.nonEmpty) {
     LocalDateTime.parse(ConfigFromFile.startDate.get)
@@ -120,7 +120,7 @@ object Main extends App {
 
   private var nUsers = ConfigFromFile.nUsers.getOrElse(ConfFromOptions.nUsers())
 
-  private[eventsim] lazy val seed =
+  private lazy val seed =
     if (ConfFromOptions.randomSeed.isSupplied)
       ConfFromOptions.randomSeed.toOption.get.toLong
     else
@@ -132,7 +132,7 @@ object Main extends App {
     else
       ConfigFromFile.tag.getOrElse("")
 
-  private[eventsim] lazy val growthRate =
+  private lazy val growthRate =
     if (ConfFromOptions.growthRate.isSupplied)
       ConfFromOptions.growthRate.get
     else

@@ -2,10 +2,10 @@ package com.interana.eventsim
 
 import com.interana.eventsim.config.ConfigFromFile
 
-object Counters {
+class Counters(firstUserId: Int) {
   // some global counters
   private var sessionId = 0L
-  private var userId    = ConfigFromFile.firstUserId.getOrElse(Main.ConfFromOptions.firstUserId.get.get)
+  private var userId    = ConfigFromFile.firstUserId.getOrElse(firstUserId)
 
   def nextSessionId = {
     sessionId = sessionId + 1
