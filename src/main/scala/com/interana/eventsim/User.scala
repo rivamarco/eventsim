@@ -45,9 +45,7 @@ class User(val seed: Long,
         thatValue.get.compareTo(thisValue.get)
     }
 
-  def nextEvent(seed: Long): Unit = nextEvent(seed, 0.0)
-
-  def nextEvent(seed: Long, prAttrition: Double) = {
+  def nextEvent(seed: Long, prAttrition: Double = 0.0) = {
     session.incrementEvent()
     if (session.done) {
       if (new TimeUtilities(seed).rng.nextDouble() < prAttrition ||
