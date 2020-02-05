@@ -22,7 +22,7 @@ libraryDependencies += "org.apache.kafka" % "kafka_2.10" % "0.8.2.1"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
 
-libraryDependencies += "io.radicalbit.nsdb" %% "nsdb-scala-api" % "0.7.0-SNAPSHOT"
+libraryDependencies += "io.radicalbit.nsdb" %% "nsdb-scala-api" % "1.0.0-SNAPSHOT"
 
 enablePlugins(JavaServerAppPackaging, SbtNativePackager)
 
