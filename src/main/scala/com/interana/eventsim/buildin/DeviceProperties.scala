@@ -4,8 +4,6 @@ object DeviceProperties {
 
   def randomProps =
     Map[String,Any](
-      "location" -> RandomLocationGenerator.randomThing,
-      "userAgent" -> RandomUserAgentGenerator.randomThing._1
-    )
+      "location" -> RandomLocationGenerator.randomThing)
 
 }

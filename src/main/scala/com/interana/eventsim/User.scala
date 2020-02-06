@@ -58,12 +58,6 @@ class User(val alpha: Double,
     var m = device.+(
       "ts" -> session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC).toEpochMilli,
       "userId" -> (if (showUserDetails) userId else ""),
-      "sessionId" -> session.sessionId,
-      "page" -> session.currentState.page,
-      "auth" -> session.currentState.auth,
-      "method" -> session.currentState.method,
-      "status" -> session.currentState.status,
-      "itemInSession" -> session.itemInSession
     )
 
     if (showUserDetails)
@@ -97,13 +91,7 @@ class User(val alpha: Double,
     writer.writeStartObject()
     writer.writeNumberField("ts", session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
     writer.writeStringField("userId", if (showUserDetails) userId.toString else "")
-    writer.writeNumberField("sessionId", session.sessionId)
-    writer.writeStringField("page", session.currentState.page)
-    writer.writeStringField("auth", session.currentState.auth)
-    writer.writeStringField("method", session.currentState.method)
-    writer.writeNumberField("status", session.currentState.status)
     writer.writeStringField("level", session.currentState.level)
-    writer.writeNumberField("itemInSession", session.itemInSession)
     if (showUserDetails) {
       props.foreach((p: (String, Any)) => {
         p._2 match {
@@ -113,9 +101,6 @@ class User(val alpha: Double,
           case _: Float => writer.writeNumberField(p._1, p._2.asInstanceOf[Float])
           case _: String => writer.writeStringField(p._1, p._2.asInstanceOf[String])
         }})
-    }
-    if (Main.tag.isDefined) {
-        writer.writeStringField("tag", Main.tag.get)
     }
     if (session.currentState.page=="NextSong") {
       writer.writeStringField("artist", session.currentSong.get._2)
@@ -153,13 +138,7 @@ object User {
 
     var result = b.timestamp(u.session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
       .tag("userId", if (showUserDetails) u.userId.toString else "")
-      .tag("sessionId", u.session.sessionId)
-      .tag("page", u.session.currentState.page)
-      .tag("auth", u.session.currentState.auth)
-      .tag("method", u.session.currentState.method)
-      .tag("status", u.session.currentState.status)
       .tag("level", u.session.currentState.level)
-      .tag("itemInSession", u.session.itemInSession)
 
     if (showUserDetails) {
       u.props.foreach((p: (String, Any)) => {
@@ -172,9 +151,6 @@ object User {
         }})
     }
 
-    if (Main.tag.isDefined) {
-      result = result.tag("tag", Main.tag.get)
-    }
     if (u.session.currentState.page=="NextSong") {
       result = result
         .tag("artist", u.session.currentSong.get._2)

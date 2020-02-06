@@ -11,7 +11,7 @@ import scala.io.Source
 object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
   System.err.println("Loading song file...")
   // val s = Source.fromFile("data/listen_counts.txt","ISO-8859-1")
-  val fis = new FileInputStream("data/listen_counts.txt.gz")
+  val fis = new FileInputStream("data/listen_counts_cleaned.txt.gz")
   val gis = new GZIPInputStream(fis)
   val s = Source.fromInputStream(gis,"ISO-8859-1")
 
