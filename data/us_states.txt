@@ -1,0 +1,50 @@
+Alabama,10
+Alaska,10
+Arizona,10
+Arkansas,10
+California,10
+Colorado,10
+Connecticut,10
+Delaware,10
+Florida,10
+Georgia,10
+Hawaii,10
+Idaho,10
+Illinois,10
+Indiana,10
+Iowa,10
+Kansas,10
+Kentucky,10
+Louisiana,10
+Maine,10
+Maryland,10
+Massachusetts,10
+Michigan,10
+Minnesota,10
+Mississippi,10
+Missouri,10
+Montana,10
+Nebraska,10
+Nevada,10
+New Hampshire,10
+New Jersey,10
+New Mexico,10
+New York,10
+North Carolina,10
+North Dakota,10
+Ohio,10
+Oklahoma,10
+Oregon,10
+Pennsylvania,10
+Rhode Island,10
+South Carolina,10
+South Dakota,10
+Tennessee,10
+Texas,10
+Utah,10
+Vermont,10
+Virginia,10
+Washington,10
+West Virginia,10
+Wisconsin,10
+Wyoming,10
