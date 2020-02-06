@@ -91,7 +91,7 @@ class User(val alpha: Double,
     writer.writeStartObject()
     writer.writeNumberField("ts", session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
     writer.writeStringField("userId", if (showUserDetails) userId.toString else "")
-    writer.writeStringField("level", session.currentState.level)
+    writer.writeStringField("plan", session.currentState.level)
     if (showUserDetails) {
       props.foreach((p: (String, Any)) => {
         p._2 match {
@@ -138,7 +138,7 @@ object User {
 
     var result = b.timestamp(u.session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
       .tag("userId", if (showUserDetails) u.userId.toString else "")
-      .tag("level", u.session.currentState.level)
+      .tag("plan", u.session.currentState.level)
 
     if (showUserDetails) {
       u.props.foreach((p: (String, Any)) => {
