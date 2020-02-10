@@ -79,10 +79,10 @@ object Main extends App {
       opt[String]("nsdb-db", descr = "Nsdb Db", required = false, default = Option("eventsim"))
 
     val nsdbNamespace: ScallopOption[String] =
-      opt[String]("nsdb-namespace", descr = "Nsdb Host", required = false, default = Option("eventsim"))
+      opt[String]("nsdb-namespace", descr = "Nsdb Host", required = false, default = Option("music"))
 
     val nsdbMetric: ScallopOption[String] =
-      opt[String]("nsdb-metric", descr = "Nsdb Host", required = false, default = Option("users"))
+      opt[String]("nsdb-metric", descr = "Nsdb Host", required = false, default = Option("listenedSongs"))
 
     val generateCounts = toggle("generate-counts", default = Some(false),
       descrYes = "generate listen counts file then stop", descrNo = "run normally")

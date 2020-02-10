@@ -104,7 +104,7 @@ class User(val alpha: Double,
     }
     if (session.currentState.page=="NextSong") {
       writer.writeStringField("artist", session.currentSong.get._2)
-      writer.writeStringField("song",  session.currentSong.get._3)
+      writer.writeStringField("title",  session.currentSong.get._3)
       writer.writeNumberField("length", session.currentSong.get._4)
     }
     writer.writeEndObject()
@@ -154,7 +154,7 @@ object User {
     if (u.session.currentState.page=="NextSong") {
       result = result
         .tag("artist", u.session.currentSong.get._2)
-        .tag("song",  u.session.currentSong.get._3)
+        .tag("title",  u.session.currentSong.get._3)
         //length
         .value(u.session.currentSong.get._4)
     } else {
