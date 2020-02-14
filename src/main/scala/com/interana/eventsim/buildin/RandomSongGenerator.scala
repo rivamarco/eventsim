@@ -30,7 +30,7 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
       val songName = fields(2)
       val duration = {
         val d = fields(3)
-        if (d != "") d.toDouble.toInt else 180
+        if (d != "") d.toDouble.toInt.toDouble else 180.0
       }
       val count = fields(4).toInt
       trackIdMap.put(trackId,(artist,songName,duration,count))

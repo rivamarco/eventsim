@@ -138,7 +138,7 @@ object User {
 
     var result = b.timestamp(u.session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
       .tag("userId", if (showUserDetails) u.userId.toString else "")
-      .tag("plan", u.session.currentState.level)
+      .tag("plan", u.session.currentState.level.capitalize)
 
     if (showUserDetails) {
       u.props.foreach((p: (String, Any)) => {

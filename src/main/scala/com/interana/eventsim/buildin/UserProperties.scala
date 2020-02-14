@@ -19,7 +19,7 @@ object UserProperties {
     Map[String,Any](
       "lastName" -> RandomLastNameGenerator.randomThing,
       "firstName" -> firstNameAndGender._1,
-      "gender" -> firstNameAndGender._2,
+      "gender" -> firstNameAndGender._2.capitalize,
       "location" -> location
     )
   }
